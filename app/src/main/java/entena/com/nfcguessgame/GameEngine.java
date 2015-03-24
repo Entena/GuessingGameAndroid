@@ -14,10 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
+
+import java.util.Scanner;
 
 public class GameEngine extends Fragment {
     // Intent request codes
@@ -27,6 +30,7 @@ public class GameEngine extends Fragment {
     private TextView otherPlayerName;
     private TextView yourAnswer;
     private TextView theirAnswer;
+    private EditText answerInput;
     private Button btnSend;
     private Button btnQuit;
     private BluetoothService btService;
@@ -58,12 +62,27 @@ public class GameEngine extends Fragment {
         theirAnswer = (TextView) v.findViewById(R.id.theirAnswer);
         btnSend = (Button) v.findViewById(R.id.btnSend);
         btnQuit = (Button) v.findViewById(R.id.btnQuit);
+        answerInput = (EditText) v.findViewById(R.id.editNumberInput);
+        btnSend.setEnabled(false);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(getActivity(), "Bluetooth is not available", Toast.LENGTH_LONG).show();
             getActivity().finish();
         }
+        btnSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(answerInput.getText().length() < 1){
+                    Toast.makeText(getActivity(), "Enter a number!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                yourAnswer.setText(answerInput.getText().toString().trim());
+                String msg = "Turn ";
+                msg += yourAnswer.getText().toString().trim();
+                btService.write(msg.getBytes());
+            }
+        });
         return v;
     }
 
@@ -71,10 +90,31 @@ public class GameEngine extends Fragment {
         otherPlayerName.setText(name);
     }
 
+    public void handleMessage(String message){
+        Scanner sc = new Scanner(message);
+        String mode = sc.next();
+        switch(mode){
+            case "Turn":
+                updateOtherPlayerAnswer(sc.next());
+                break;
+        }
+    }
+
+    public void updateOtherPlayerAnswer(String ans){
+        theirAnswer.setText(ans);
+    }
+
+    public void changeSendBtnState(boolean state){
+        btnSend.setEnabled(state);
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        btService = ((MainActivity) activity).mChatService;
+    }
+
+    public void setBtService(BluetoothService btService){
+        this.btService = btService;
     }
 
     @Override

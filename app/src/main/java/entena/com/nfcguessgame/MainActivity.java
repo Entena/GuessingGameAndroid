@@ -38,6 +38,8 @@ public class MainActivity extends ActionBarActivity {
                         case BluetoothService.STATE_CONNECTED:
                             //setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
                             engine.setStatus("Connected to "+mConnectedDeviceName);
+                            engine.changeSendBtnState(true);
+                            engine.updateOtherPlayerName(mConnectedDeviceName+":");
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             //setStatus(R.string.title_connecting);
@@ -47,20 +49,22 @@ public class MainActivity extends ActionBarActivity {
                         case BluetoothService.STATE_NONE:
                             //setStatus(R.string.title_not_connected);
                             engine.setStatus(getResources().getString(R.string.title_not_connected));
+                            engine.changeSendBtnState(false);
+                            engine.updateOtherPlayerName("Other Player:");
                             break;
                     }
                     break;
                 case Constants.MESSAGE_WRITE:
-                    byte[] writeBuf = (byte[]) msg.obj;
+                    /*byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    //mConversationArrayAdapter.add("Me:  " + writeMessage);
+                    //mConversationArrayAdapter.add("Me:  " + writeMessage);*/
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    //mConversationArrayAdapter.add(mConnectedDeviceName + ":  " + readMessage);
+                    engine.handleMessage(readMessage);
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
@@ -69,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
                     engine.setStatus("Connected to "+ mConnectedDeviceName);
                     break;
                 case Constants.MESSAGE_TOAST:
-                        Toast.makeText(getApplication(), msg.getData().getString(Constants.TOAST),
+                    Toast.makeText(getApplication(), msg.getData().getString(Constants.TOAST),
                                 Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -80,13 +84,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //btnClient = (Button) findViewById(R.id.btnClient);
-        /*btnClient.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setUpGameScreen();
-            }
-        });*/
         setUpGameScreen();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         // If the adapter is null, then Bluetooth is not supported
@@ -95,6 +92,7 @@ public class MainActivity extends ActionBarActivity {
             this.finish();
         }
         mChatService = new BluetoothService(getApplicationContext(), mHandler);
+        engine.setBtService(mChatService);
     }
 
     private void setUpGameScreen(){
@@ -189,6 +187,5 @@ public class MainActivity extends ActionBarActivity {
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
         mChatService.connect(device, secure);
-        Log.e("HIT", "HIT");
     }
 }
