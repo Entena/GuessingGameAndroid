@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class GameEngine extends Fragment {
@@ -33,6 +34,7 @@ public class GameEngine extends Fragment {
     private EditText answerInput;
     private Button btnSend;
     private Button btnQuit;
+    private Button btnDecide;
     private BluetoothService btService;
 
     public GameEngine() {
@@ -60,8 +62,10 @@ public class GameEngine extends Fragment {
         otherPlayerName = (TextView) v.findViewById(R.id.lblOtherPlayer);
         yourAnswer = (TextView) v.findViewById(R.id.yourAnswer);
         theirAnswer = (TextView) v.findViewById(R.id.theirAnswer);
+        yourAnswer.setText(""); theirAnswer.setText("");
         btnSend = (Button) v.findViewById(R.id.btnSend);
         btnQuit = (Button) v.findViewById(R.id.btnQuit);
+        btnDecide = (Button) v.findViewById(R.id.btnDecide);
         answerInput = (EditText) v.findViewById(R.id.editNumberInput);
         btnSend.setEnabled(false);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -83,6 +87,19 @@ public class GameEngine extends Fragment {
                 btService.write(msg.getBytes());
             }
         });
+        btnQuit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btService.stop();
+                getActivity().finish();
+            }
+        });
+        btnDecide.setEnabled(false);
+        btnDecide.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v){
+                pickWinner(true, null);
+            }
+        });
         return v;
     }
 
@@ -97,6 +114,33 @@ public class GameEngine extends Fragment {
             case "Turn":
                 updateOtherPlayerAnswer(sc.next());
                 break;
+            case "Decide":
+                pickWinner(false, sc.next());
+                break;
+        }
+    }
+
+    public void pickWinner(boolean host, String msg){
+        int yours, theirs, win, answer;
+        if(host) {
+            if (yourAnswer.getText().length() < 1 || theirAnswer.getText().length() < 1) {
+                Toast.makeText(getActivity(), "Error: someone has not picked a number", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Random r = new Random();
+            answer = r.nextInt(Integer.MAX_VALUE);
+            String send = "Decide "+answer;
+            btService.write(send.getBytes());
+        } else {
+            answer = Integer.parseInt(msg);
+        }
+        yours = Math.abs(answer - Integer.parseInt(yourAnswer.getText().toString()));
+        theirs = Math.abs(answer - Integer.parseInt(theirAnswer.getText().toString()));
+        win = Math.min(yours, theirs);
+        if(win == yours){
+            Toast.makeText(getActivity(),"You Won! Answer: "+answer, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getActivity(), "You Lost! Answer: "+answer, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -106,6 +150,7 @@ public class GameEngine extends Fragment {
 
     public void changeSendBtnState(boolean state){
         btnSend.setEnabled(state);
+        btnDecide.setEnabled(state);
     }
 
     @Override

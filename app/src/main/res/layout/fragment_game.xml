@@ -56,19 +56,20 @@
         android:layout_above="@+id/enterLabel"
         android:layout_toEndOf="@+id/gameTableLayoutLabels">
         <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_width="match_parent"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text=""
             android:layout_weight=".5"
-            android:id="@+id/yourAnswer" />
+            android:id="@+id/yourAnswer"
+            android:layout_gravity="left" />
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text=""
             android:layout_weight=".5"
-            android:id="@+id/theirAnswer" />
+            android:id="@+id/theirAnswer"             />
     </LinearLayout>
 
     <EditText
@@ -104,4 +105,12 @@
         android:id="@+id/btnSend"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Decide"
+        android:id="@+id/btnDecide"
+        android:layout_alignTop="@+id/btnQuit"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

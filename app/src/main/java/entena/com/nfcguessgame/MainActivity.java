@@ -93,6 +93,7 @@ public class MainActivity extends ActionBarActivity {
         }
         mChatService = new BluetoothService(getApplicationContext(), mHandler);
         engine.setBtService(mChatService);
+        mChatService.start();
     }
 
     private void setUpGameScreen(){
@@ -181,8 +182,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
-        String address = data.getExtras()
-                .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+        String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         // Attempt to connect to the device
